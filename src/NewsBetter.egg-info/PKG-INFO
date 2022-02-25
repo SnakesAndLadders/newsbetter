@@ -1,0 +1,22 @@
+Metadata-Version: 2.1
+Name: NewsBetter
+Version: 0.0.1
+Summary: Yet another RSS news reader
+Home-page: https://github.com/SnakesAndLadders/newsbetter
+Author: Shawn Ayotte
+Author-email: shawn.k.ayotte@gmail.com
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/SnakesAndLadders/newsbetter/issues
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# NewsBetter
+## Reason
+Most rss readers use the contents of the RSS feed to display their data. Many RSS providers lately have been adding very little text to the body of the feed file in order to encourage you to click on the link to go to the article. I made this software using [Newspaper3k](https://newspaper.readthedocs.io/en/latest/) to grab the body of the article text and display in the TUI so you don't have to take that extra step! 
+
+

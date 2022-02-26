@@ -17,7 +17,11 @@ There are a lot of features that I would like to add to this software. Among the
 - Add a block list function to add words and phrases that can be used to filter out specific lines of text (like "Advertisement story continues below" for example)
 
 ## Install
-Simply run 'pip3 install NewsBetter' and run NewsBetter when complete (Mind the capital letters, I know it is not the standard naming but oh well).
+Simply run 
+```
+pip3 install NewsBetter 
+```
+and run NewsBetter when complete (Mind the capital letters, I know it is not the standard naming but oh well).
 
 ## Usage
 When inside the software the controlls are simple. 
@@ -26,3 +30,8 @@ When inside the software the controlls are simple.
 - Use the up and down arrows to highlight the article you want to read, them press the right arrow to read the article.
 - Use the left arrow to go back.
 - Press 'q' to quit anywhere except when you are reading the article. To get out of the article widget press the left arrow key or <esc>
+- If you would like to try the NLP based article summary feature run the program with 
+```
+NewsBetter summary
+```
+If you would like to contribute to the project please let me know.

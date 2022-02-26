@@ -1,3 +1,0 @@
-py_cui
-newspaper3k
-feedparser

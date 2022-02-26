@@ -1,9 +1,4 @@
-"""Main TUI implementation for NewsBetter
-
-Author: Shawn Ayotte
-Created:
-"""
-
+#!/usr/bin/env python3
 import os
 import textwrap
 import sys
@@ -12,12 +7,10 @@ import py_cui
 import feedparser
 from newspaper import Article
 
-__version__ = 'v0.0.8'
-
-myfile = Path(str(Path.home()) + '/.urls')
+myfile = Path('urls')
 myfile.touch(exist_ok=True)
 
-class NewsbetterApp:
+class NewsBetter:
 
     def __init__(self, root: py_cui.PyCUI):
         self.root = root
@@ -51,7 +44,7 @@ class NewsbetterApp:
         self.article_read.add_key_command(               py_cui.keys.KEY_LEFT_ARROW, self.back_to_articles)
 
     def load_feeds(self):
-        with open(myfile, 'r+') as f:
+        with open('urls', 'r+') as f:
             for line in f:
                 (key, val) = line.split(",")
                 self.d[key] = val
@@ -65,15 +58,15 @@ class NewsbetterApp:
             self.name = name + " 2"
         else:
             self.name = name
-        file_object = open(myfile, 'a')
+        file_object = open('urls', 'a')
         file_object.write(self.name + ",")
         file_object.close()
         self.add_new_popup = self.root.show_text_box_popup("URL:", self.save_new)
 
     def save_new(self, entry):
         #entry = self.add_new_popup.get()
-        file_object = open(myfile, 'a')
-        file_object.write(entry.strip() + "\n")
+        file_object = open('urls', 'a')
+        file_object.write(entry + "\n")
         file_object.close()
         self.name = ""
         self.feed_list.clear()
@@ -119,19 +112,19 @@ class NewsbetterApp:
         try:
             for i in self.feed.entries:
                 if i['title'] == article_title:
-                    for x in i['links']:
-                        article = Article(x.href)
-                        article.download()
-                        article.parse()
+                 for x in i['links']:
+                     article = Article(x.href)
+                     article.download()
+                     article.parse()
             try:
                 if sys.argv[1] == "summary":
                     try:
                         article.nlp()
                         text_wrap = textwrap.wrap(article.summary, width=columns - 5, drop_whitespace=False, replace_whitespace=False)
                         self.article_read.set_title(article_title + " (Summary) CTRL-x to return to articles")
-                    except Exception as e:
+                    except:
                         text_wrap = textwrap.wrap(article.text, width=columns - 5, drop_whitespace=False, replace_whitespace=False)
-                        self.article_read.set_title(article_title + " (Summary not available " + str(e) + ") CTRL-x to return to articles")
+                        self.article_read.set_title(article_title + " (Summary not available) CTRL-x to return to articles")
             except:
                 text_wrap = textwrap.wrap(article.text, width=columns - 5, drop_whitespace=False, replace_whitespace=False)
                 self.article_read.set_title(article_title)
@@ -147,14 +140,13 @@ class NewsbetterApp:
         except Exception as e:
             text = "sorry, this page failed to load. Please try another article. " + str(e)
 
-
+       
         self.article_read.clear()
         # self.article_read.set_title(article_title)
         self.article_read.set_text(str(text))
         self.root.move_focus(self.article_read)
 
-
-def main():
-    root = py_cui.PyCUI(9, 8)
-    wrapper =  NewsbetterApp(root)
-    root.start()
+# Create CUI object, pass to wrapper class, and start the CUI
+root = py_cui.PyCUI(9, 8)
+wrapper = NewsBetter(root)
+root.start()

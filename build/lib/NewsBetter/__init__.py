@@ -12,7 +12,7 @@ import py_cui
 import feedparser
 from newspaper import Article
 
-__version__ = 'v0.0.8'
+__version__ = 'v0.0.5'
 
 myfile = Path(str(Path.home()) + '/.urls')
 myfile.touch(exist_ok=True)

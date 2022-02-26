@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 from sys import platform
 import os
 
-# with open('requirements.txt', 'r') as req_fp:
-#     required_packages = req_fp.readlines()
+#with open('requirements.txt', 'r') as req_fp:
+#    required_packages = req_fp.readlines()
 
 # Use README for long description
 with open('README.md', 'r') as readme_fp:
@@ -11,7 +11,7 @@ with open('README.md', 'r') as readme_fp:
 
 setup(
     name="NewsBetter",
-    version="0.0.3",
+    version="0.0.8",
     author="Shawn Ayotte",
     author_email="shawn.k.ayotte@gmail.com",
     description="Yet another RSS news reader ",
@@ -29,11 +29,11 @@ setup(
             'NewsBetter = NewsBetter:main',
         ],
     },
-    # install_requires=required_packages,
+    install_requires=["feedparser==6.0.8", "newspaper3k==0.2.8", "py_cui==0.1.4", "setuptools==58.0.4", "testresources==2.0.1"],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        
+
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',

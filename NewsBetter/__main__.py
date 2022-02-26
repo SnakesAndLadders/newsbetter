@@ -1,0 +1,3 @@
+import NewsBetter
+
+NewsBetter.main()

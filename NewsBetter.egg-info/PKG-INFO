@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: NewsBetter
+Version: 0.0.3
+Summary: Yet another RSS news reader 
+Home-page: https://github.com/SnakesAndLadders/NewsBetter
+Author: Shawn Ayotte
+Author-email: shawn.k.ayotte@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Description-Content-Type: text/markdown
+Provides-Extra: test
+License-File: AUTHORS
+
+# NewsBetter
+
+Yet another RSS news reader 
+

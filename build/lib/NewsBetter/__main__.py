@@ -1,3 +1,0 @@
-import NewsBetter
-
-NewsBetter.main()

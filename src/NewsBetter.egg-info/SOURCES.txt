@@ -1,8 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-setup.cfg
-src/NewsBetter.egg-info/PKG-INFO
-src/NewsBetter.egg-info/SOURCES.txt
-src/NewsBetter.egg-info/dependency_links.txt
-src/NewsBetter.egg-info/top_level.txt

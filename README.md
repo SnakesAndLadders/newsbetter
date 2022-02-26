@@ -2,7 +2,7 @@
 Yet another RSS news reader
 
 ## Just... why?
-There are tons of TUI and CLI RSS readers out there [(Newsboat](https://newsboat.org/)) is one that I have used for years. The one thing I don't like is that more and more sites are putting less and less details in their rss files.  
+There are tons of TUI and CLI RSS readers out there ([Newsboat](https://newsboat.org/)) is one that I have used for years. The one thing I don't like is that more and more sites are putting less and less details in their rss files.  
   
 There is always the option to open the page in w3m or the like, but then you have to open a completely different program and then close it to go back to the reader.  
   

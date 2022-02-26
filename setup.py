@@ -11,7 +11,7 @@ with open('README.md', 'r') as readme_fp:
 
 setup(
     name="NewsBetter",
-    version="0.0.8",
+    version="1.0.0",
     author="Shawn Ayotte",
     author_email="shawn.k.ayotte@gmail.com",
     description="Yet another RSS news reader ",

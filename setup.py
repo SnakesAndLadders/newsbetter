@@ -15,7 +15,7 @@ setup(
     author="Shawn Ayotte",
     author_email="shawn.k.ayotte@gmail.com",
     description="Yet another RSS news reader ",
-    license="",
+    license="MIT",
     keywords="",
     url="https://github.com/SnakesAndLadders/NewsBetter",
     long_description=long_description,

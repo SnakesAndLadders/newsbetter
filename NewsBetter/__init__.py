@@ -10,12 +10,15 @@ import sys
 from pathlib import Path
 import py_cui
 import feedparser
-from newspaper import Article
+from newspaper import Article, Config
 
-__version__ = 'v1.0.2'
+__version__ = 'v1.0.3'
 
 myfile = Path(str(Path.home()) + '/.urls')
 myfile.touch(exist_ok=True)
+config = Config()
+config.browser_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124  Safari/537.36'
+config.fetch_images = False
 
 class NewsbetterApp:
 
@@ -131,7 +134,7 @@ class NewsbetterApp:
             for i in self.feed.entries:
                 if i['title'] == article_title:
                     for x in i['links']:
-                        article = Article(x.href)
+                        article = Article(x.href, config=config)
                         article.download()
                         article.parse()
 

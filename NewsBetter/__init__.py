@@ -13,7 +13,7 @@ import py_cui
 import feedparser
 from newspaper import Article, Config
 
-__version__ = 'v1.0.3'
+__version__ = 'v1.0.4'
 
 urlfile = Path(str(Path.home()) + '/.nburls')
 urlfile.touch(exist_ok=True)

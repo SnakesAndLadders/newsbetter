@@ -13,13 +13,18 @@ import py_cui
 import feedparser
 from newspaper import Article, Config
 
-__version__ = 'v1.0.4'
+__version__ = 'v1.0.5'
 
 urlfile = Path(str(Path.home()) + '/.nburls')
 urlfile.touch(exist_ok=True)
 
 settingsfile = Path(str(Path.home()) + '/.nbsettings')
 settingsfile.touch(exist_ok=True)
+
+if os.stat(settingsfile).st_size == 0:
+    f = open(settingsfile, 'w')
+    f.write("{\n    \"removeme\": [\n      \"This advertisement \"\n    ]\n    \"removephrase\": [        \"Article content \"\n    ]\n}")
+    f.close()
 
 config = Config()
 config.browser_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124  Safari/537.36'

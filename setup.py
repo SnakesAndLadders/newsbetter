@@ -29,7 +29,7 @@ setup(
             'NewsBetter = NewsBetter:main',
         ],
     },
-    install_requires=["feedparser==6.0.8", "newspaper3k==0.2.8", "py_cui==0.1.6", "setuptools==84.1.0", "testresources==2.0.1"],
+    install_requires=["feedparser==6.0.14", "newspaper3k==0.2.8", "py_cui==0.1.6", "setuptools==84.1.0", "testresources==2.0.1"],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

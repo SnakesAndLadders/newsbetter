@@ -29,10 +29,6 @@ setup(
             'NewsBetter = NewsBetter:main',
         ],
     },
-
-    
-    
-    
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

@@ -5,7 +5,6 @@ Author: Shawn Ayotte
 Created:
 """
 # Todo: Add a "Remove Feed" option in the sidebar, allowing users to delete saved feeds from the list and the JSON file.
-# Todo: Fix rss feed refreshing, currently r and R do nothing, need to implement a method to refresh the feed list and update the UI accordingly.
 # Todo: Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading 
 # Todo: Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app. 
 # Todo: Add option to export to Obsidian using Obsidian API, allowing users to save articles directly to their Obsidian note-taking app.
@@ -119,7 +118,9 @@ class ReaderModeApp(App):
         color: #e0e0e0;
         padding: 1 2;
     }
-    #direct_input {
+    #status-bar {
+        content-align: center middle;
+        width: 100%;
         margin: 1;
     }
     """
@@ -141,6 +142,7 @@ class ReaderModeApp(App):
     def compose(self) -> ComposeResult:
         yield Header()
         # yield Input(placeholder="Or paste temporary URL (Website or RSS) and hit Enter...", id="direct_input")
+        yield Label("Ready", id="status-bar")
         
         with Horizontal():
             with Vertical(id="sidebar"):
@@ -211,12 +213,14 @@ class ReaderModeApp(App):
             (name for name, feed_url in self.saved_feeds.items() if feed_url == url),
             url,
         )
-        viewer.update(f"# Syncing feed source: {feed_name}...")
+        status_bar = self.query_one("#status-bar", Label)
+        #viewer.update(f"# Syncing feed source: {feed_name}...")
+        status_bar.update(f"[b green]Syncing feed source: {feed_name}[/]")
 
         try:
             feed_data = feedparser.parse(url, agent="Mozilla/5.0")
             if feed_data.entries:
-                viewer.update(f"# Loaded  {feed_name} successfully.\n\n## Select an item from the **Articles Menu** on the left.")
+                status_bar.update(f"[b green]Loaded  {feed_name} successfully.[/]")
                 self.current_feed_entries = feed_data.entries
                 
                 for idx, entry in enumerate(self.current_feed_entries):
@@ -245,7 +249,7 @@ class ReaderModeApp(App):
             clean_html = doc.summary()
             markdown_content = md(clean_html, heading_style="ATX")
             viewer.update("")
-            viewer.update(f"# {title} \n\n" + markdown_content)
+            viewer.update(f"# {title} \n\n" + f"## [Link to article:]({url}) \n\n" + markdown_content)
             viewer.focus()
 
         except Exception as e:

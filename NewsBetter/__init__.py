@@ -3,6 +3,7 @@ import os
 import textwrap
 import requests
 import feedparser
+from pathlib import Path
 from markdownify import markdownify as md
 from readability import Document
 from textual.app import App, ComposeResult
@@ -11,7 +12,8 @@ from textual.widgets import Header, Footer, Input, OptionList, Label, Markdown
 from textual.widgets.option_list import Option
 from textual.screen import ModalScreen
 
-FEEDS_FILE = "feeds.json"
+home_dir = Path.home()
+FEEDS_FILE = home_dir / ".nbfeeds.json"
 
 def load_saved_feeds():
     if os.path.exists(FEEDS_FILE):
@@ -113,7 +115,9 @@ class ReaderModeApp(App):
         ("b", "back_to_articles", "Focus Articles"),
         ("f", "focus_feeds", "Focus Sidebar"),
         ("left", "focus_previous", "Focus Previous"),
-        ("right", "focus_next", "Focus Next")
+        ("right", "focus_next", "Focus Next"),
+        ("r", "fetch_rss_feed", "Refresh Feeds"),
+        ("R", "load_saved_feeds", "Reload Saved Feeds")
     ]
 
     def __init__(self):
@@ -187,14 +191,14 @@ class ReaderModeApp(App):
         
         feed_menu.clear_options()
         
-        viewer.update("[yellow]Syncing feed source...[/yellow]")
+        viewer.update("# Syncing feed source...")
 
         try:
             feed_data = feedparser.parse(url, agent="Mozilla/5.0")
             
             # Use data entry validation instead of protocol version tracking flags
             if feed_data.entries:
-                viewer.update(f"[green]Loaded RSS Feed successfully.[/green]\nSelect an item from the [bold]Articles Menu[/bold] on the left.")
+                viewer.update(f"# Loaded RSS Feed successfully.\n\n## Select an item from the **Articles Menu** on the left.")
                 self.current_feed_entries = feed_data.entries
                 
                 for idx, entry in enumerate(self.current_feed_entries):
@@ -207,11 +211,11 @@ class ReaderModeApp(App):
                 self.load_article_reader(url)
 
         except Exception as e:
-            viewer.update(f"\n[bold red]Network/Parsing Error:[/bold red] {str(e)}")
+            viewer.update(f"\n# Network/Parsing Error: {str(e)}")
 
     def load_article_reader(self, url: str) -> None:
         viewer = self.query_one("#viewer", Markdown)
-        viewer.update(f"[yellow]Opening reader mode for:[/yellow] {url}\n")
+        viewer.update(f"# Opening reader mode for: {url}\n")
 
         try:
             response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
@@ -237,4 +241,5 @@ class ReaderModeApp(App):
 def main():
     ReaderModeApp().run()
 
-main()
+if __name__ == "__main__":
+    main()  # 1.1.2, 1.2.5

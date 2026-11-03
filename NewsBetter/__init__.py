@@ -1,3 +1,15 @@
+"""
+Main TUI implementation for NewsBetter
+
+Author: Shawn Ayotte
+Created:
+"""
+# Todo: Add a "Remove Feed" option in the sidebar, allowing users to delete saved feeds from the list and the JSON file.
+# Todo: Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading 
+# Todo: Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app. 
+# Todo: Add option to export to Obsidian using Obsidian API, allowing users to save articles directly to their Obsidian note-taking app.
+# Todo: Add option to get an AI summary of the article using whatever AI service they like, local or cloud-based, allowing users to quickly understand the main points of an article without reading the entire content.
+
 import json
 import os
 import textwrap
@@ -11,6 +23,7 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Header, Footer, Input, OptionList, Label, Markdown
 from textual.widgets.option_list import Option
 from textual.screen import ModalScreen
+
 
 home_dir = Path.home()
 FEEDS_FILE = home_dir / ".nbfeeds.json"

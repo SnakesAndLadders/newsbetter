@@ -7,15 +7,16 @@ There are tons of TUI and CLI RSS readers out there ([Newsboat](https://newsboat
 There is always the option to open the page in w3m or the like, but then you have to open a completely different program and then close it to go back to the reader.  
   
 ## Enter NewsBetter
-NewsBetter uses the [newspaper3k library](https://newspaper.readthedocs.io/en/latest/) to download and parse the article. You also have the option to get a quick summary of the article via the library's Natural Language Processing (NLP) module.
+NewsBetter uses the [Mozilla Readability](https://pypi.org/project/python-readability/) library to parse the article from its main URL, instead of only loading the summary from the RSS feed. This allows you to see the whole article and not the filler, just like using Reader View in Firefox!  
 
 ## TODO
 There are a lot of features that I would like to add to this software. Among them are:
-- Support for themes
-- Better handling of command line arguments
-- Clearing the article widget when going back to the article list. At the moment calling .clear() on the widget if you are scrolled past the first page of text causes an error.
-- Add a block list function to add words and phrases that can be used to filter out specific lines of text (like "Advertisement story continues below" for example)
-- Find out why summary mode does not work when installing from pip
+- Currently you can't remove a feed, I am going to fix that. For now edit your [Home Folder] -> .nbfeeds.json file to remove entries
+- Update this README with current information. Installation is the same but everything has been reworked. See release notes.
+- Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading.
+- Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app.
+- Add support for other note taking APIs.
+- Add option to get an AI summary of the article using whatever AI service they like, local or cloud-based.
 
 ## Install
 Simply run 

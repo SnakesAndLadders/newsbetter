@@ -1,188 +1,245 @@
-"""Main TUI implementation for NewsBetter
-
-Author: Shawn Ayotte
-Created:
-"""
-
+import json
 import os
 import textwrap
-import json
-import sys
-from pathlib import Path
-import py_cui
+import requests
 import feedparser
-from newspaper import Article, Config
+from pathlib import Path
+from markdownify import markdownify as md
+from readability import Document
+from textual.app import App, ComposeResult
+from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.widgets import Header, Footer, Input, OptionList, Label, Markdown
+from textual.widgets.option_list import Option
+from textual.screen import ModalScreen
 
-__version__ = 'v1.0.5'
+home_dir = Path.home()
+FEEDS_FILE = home_dir / ".nbfeeds.json"
 
-urlfile = Path(str(Path.home()) + '/.nburls')
-urlfile.touch(exist_ok=True)
-
-settingsfile = Path(str(Path.home()) + '/.nbsettings')
-settingsfile.touch(exist_ok=True)
-
-if os.stat(settingsfile).st_size == 0:
-    f = open(settingsfile, 'w')
-    f.write("{\n    \"removeme\": [\n      \"This advertisement \"\n    ]\n    \"removephrase\": [        \"Article content \"\n    ]\n}")
-    f.close()
-
-config = Config()
-config.browser_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124  Safari/537.36'
-config.fetch_images = False
-
-columns, rows = os.get_terminal_size(0)
-
-class NewsbetterApp:
-
-    def __init__(self, root: py_cui.PyCUI):
-        self.root = root
-        self.feed = ""
-        self.summary = 0
-        self.d = {}
-        self.feed_list = self.root.add_scroll_menu('Source', 0, 0, row_span=2, column_span=3)
-
-        # Add sources from URLS file
-        self.load_feeds()
-        sources=[]
-        for source in self.d:
-            sources.append(source)
-        self.feed_list.add_item_list(sources)
-        self.root.move_focus(self.feed_list)
-
-        self.article_list = self.root.add_scroll_menu('Articles', 0, 3, row_span=2, column_span=5)
-        self.article_read = self.root.add_text_block("Article", 2, 0, row_span=7, column_span=8)
-
-        self.root.set_title("NewsBetter News Reader")
-        self.root.set_status_bar_text("Options: Left/Right arrow to navigate between panes, a to add new, q to quit.")
-
-        self.feed_list.add_key_command(                  py_cui.keys.KEY_A_LOWER, self.add_new)
-        self.feed_list.add_key_command(                  py_cui.keys.KEY_Q_LOWER, self.quit_now)
-        self.feed_list.add_key_command(                  py_cui.keys.KEY_ENTER, self.list_articles)
-        self.feed_list.add_key_command(                  py_cui.keys.KEY_RIGHT_ARROW, self.list_articles)
-        self.feed_list.add_key_command(                  py_cui.keys.KEY_S_LOWER, self.toggle_summary)
-
-        self.article_list.add_key_command(               py_cui.keys.KEY_A_LOWER, self.add_new)
-        self.article_list.add_key_command(               py_cui.keys.KEY_Q_LOWER, self.quit_now)
-        self.article_list.add_key_command(               py_cui.keys.KEY_LEFT_ARROW, self.back_to_feeds)
-        self.article_list.add_key_command(               py_cui.keys.KEY_RIGHT_ARROW, self.read_article)
-        self.article_list.add_key_command(               py_cui.keys.KEY_ENTER, self.read_article)
-        self.article_list.add_key_command(               py_cui.keys.KEY_S_LOWER, self.toggle_summary)
-
-        self.article_read.add_key_command(               py_cui.keys.KEY_CTRL_X, self.back_to_articles)
-        self.article_read.add_key_command(               py_cui.keys.KEY_LEFT_ARROW, self.back_to_articles)
-
-    def load_feeds(self):
-        with open(urlfile, 'r+') as f:
-            for line in f:
-                (key, val) = line.split(",")
-                self.d[key] = val
-
-    def toggle_summary(self):
-        if self.summary == 0:
-            self.summary = 1
-            self.feed_list.set_title("Source (Summary Mode On)")
-        elif self.summary == 1:
-            self.summary = 0
-            self.feed_list.set_title("Source")
-
-
-    def add_new(self):
-        self.add_new_popup = self.root.show_text_box_popup("Site Name:", self.get_url)
-
-    def get_url(self, name):
-        self.load_feeds()
-        if name in self.d.keys():
-            self.name = name + " 2"
-        else:
-            self.name = name
-        file_object = open(urlfile, 'a')
-        file_object.write(self.name + ",")
-        file_object.close()
-        self.add_new_popup = self.root.show_text_box_popup("URL:", self.save_new)
-
-    def save_new(self, entry):
-        file_object = open(urlfile, 'a')
-        file_object.write(entry.strip() + "\n")
-        file_object.close()
-        self.name = ""
-        self.feed_list.clear()
-        self.load_feeds()
-        sources=[]
-        for source in self.d:
-            sources.append(source)
-        self.feed_list.add_item_list(sources)
-        self.root.move_focus(self.feed_list)
-
-
-    def quit_now(self):
-        exit()
-
-    def list_articles(self):
-        source = self.feed_list.get()
-        url = self.d[source]
-        self.feed = feedparser.parse(url)
-        titles = []
-        for j in self.feed.entries:
-            titles.append(j['title'])
-        self.article_list.clear()
-        self.article_list.set_title(source)
-        self.article_list.add_item_list(titles)
-        self.root.move_focus(self.article_list)
-
-    def back_to_articles(self):
-        self.article_read.get_start_position()
-        self.article_read.set_title("Article")
-        self.root.move_focus(self.article_list)
-
-    def back_to_feeds(self):
-        self.article_list.clear()
-        self.article_list.set_title("Articles")
-        self.root.move_focus(self.feed_list)
-
-    def read_article(self):
-        
-        article_title = self.article_list.get()
+def load_saved_feeds():
+    if os.path.exists(FEEDS_FILE):
         try:
-            for i in self.feed.entries:
-                if i['title'] == article_title:
-                    for x in i['links']:
-                        article = Article(x.href, config=config)
-                        article.download()
-                        article.parse()
+            with open(FEEDS_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "Hacker News": "https://news.ycombinator.com/rss",
+        "BBC News": "http://feeds.bbci.co.uk/news/rss.xml"
+    }
 
-            text = "\nPublish Date: " + str(article.publish_date) + "\n"
-            text = text + parse_article(article.text)
+def save_feeds(feeds):
+    with open(FEEDS_FILE, "w") as f:
+        json.dump(feeds, f, indent=4)
+
+
+class AddFeedDialog(ModalScreen[tuple[str, str] | None]):
+    CSS = """
+    AddFeedDialog {
+        align: center middle;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    #dialog_box {
+        width: 60;
+        height: auto;
+        background: #242424;
+        border: thick #3a3a3a;
+        padding: 1 2;
+    }
+    Label {
+        margin-top: 1;
+        text-style: bold;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="dialog_box"):
+            yield Label("Feed Name:")
+            yield Input(placeholder="e.g., Slashdot", id="feed_name")
+            yield Label("Feed URL:")
+            yield Input(placeholder="https://example.com", id="feed_url")
+            yield Label("\nPress [Enter] on URL to save, or [Esc] to cancel.", id="hint")
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        name = self.query_one("#feed_name", Input).value.strip()
+        url = self.query_one("#feed_url", Input).value.strip()
+        if name and url:
+            self.dismiss((name, url))
+        else:
+            self.dismiss(None)
+
+    def action_quit(self) -> None:
+        self.dismiss(None)
+
+    BINDINGS = [("escape", "quit", "Cancel")]
+
+
+class ReaderModeApp(App):
+    CSS = """
+    #sidebar {
+        width: 45;
+        background: #1e1e1e;
+        border-right: solid #3a3a3a;
+    }
+    #main_content {
+        width: 1fr;
+    }
+    .sidebar-title {
+        padding: 1 1 0 1;
+        text-style: bold;
+        color: cyan;
+    }
+    OptionList {
+        background: transparent;
+        border: none;
+    }
+    #saved_feeds_list {
+        height: 8;
+        border-bottom: solid #3a3a3a;
+    }
+    #feed_menu {
+        height: 1fr;
+    }
+    RichLog {
+        background: #1a1a1a;
+        color: #e0e0e0;
+        padding: 1 2;
+    }
+    #direct_input {
+        margin: 1;
+    }
+    """
+    
+    BINDINGS = [
+        ("q", "quit", "Quit"),
+        ("a", "add_feed", "Add Feed"),
+        ("b", "back_to_articles", "Focus Articles"),
+        ("f", "focus_feeds", "Focus Sidebar"),
+        ("left", "focus_previous", "Focus Previous"),
+        ("right", "focus_next", "Focus Next"),
+        ("r", "fetch_rss_feed", "Refresh Feeds"),
+        ("R", "load_saved_feeds", "Reload Saved Feeds")
+    ]
+
+    def __init__(self):
+        super().__init__()
+        self.saved_feeds = load_saved_feeds()
+        self.current_feed_entries = []
+
+    def compose(self) -> ComposeResult:
+        yield Header()
+        # yield Input(placeholder="Or paste temporary URL (Website or RSS) and hit Enter...", id="direct_input")
+        
+        with Horizontal():
+            with Vertical(id="sidebar"):
+                yield Label(" Saved Feeds (Press 'a' to add)", classes="sidebar-title")
+                yield OptionList(id="saved_feeds_list")
+                yield Label(" Articles Menu", classes="sidebar-title")
+                yield OptionList(id="feed_menu", compact=True)
+                
+            with Vertical(id="main_content"):
+                yield VerticalScroll(Markdown(id="viewer"))
+                
+        yield Footer()
+
+    def on_mount(self) -> None:
+        self.refresh_saved_feeds_ui()
+        self.query_one("#saved_feeds_list", OptionList).focus()
+
+    def refresh_saved_feeds_ui(self) -> None:
+        feeds_list = self.query_one("#saved_feeds_list", OptionList)
+        feeds_list.clear_options()
+        for name in self.saved_feeds.keys():
+            feeds_list.add_option(Option(name, id=name))
+
+    def action_add_feed(self) -> None:
+        def handle_dialog_result(result: tuple[str, str] | None) -> None:
+            if result:
+                name, url = result
+                self.saved_feeds[name] = url
+                save_feeds(self.saved_feeds)
+                self.refresh_saved_feeds_ui()
+                self.fetch_rss_feed(url)
+
+        self.push_screen(AddFeedDialog(), handle_dialog_result)
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        # CRITICAL FIX: Only parse URLs submitted via the primary top bar.
+        # Ignore bubbling events sent from components inside the dialog modal.
+        if event.input.id == "direct_input":
+            url = event.value.strip()
+            if url:
+                self.fetch_rss_feed(url)
+
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        menu_id = event.option_list.id
+        
+        if menu_id == "saved_feeds_list":
+            feed_name = event.option.id
+            feed_url = self.saved_feeds[feed_name]
+            self.fetch_rss_feed(feed_url)
+            
+        elif menu_id == "feed_menu":
+            idx = int(event.option.id)
+            entry = self.current_feed_entries[idx]
+            article_url = entry.get("link")
+            if article_url:
+                self.load_article_reader(article_url)
+
+    def fetch_rss_feed(self, url: str) -> None:
+        viewer = self.query_one("#viewer", Markdown)
+        feed_menu = self.query_one("#feed_menu", OptionList)
+        
+        feed_menu.clear_options()
+        
+        viewer.update("# Syncing feed source...")
+
+        try:
+            feed_data = feedparser.parse(url, agent="Mozilla/5.0")
+            
+            # Use data entry validation instead of protocol version tracking flags
+            if feed_data.entries:
+                viewer.update(f"# Loaded RSS Feed successfully.\n\n## Select an item from the **Articles Menu** on the left.")
+                self.current_feed_entries = feed_data.entries
+                
+                for idx, entry in enumerate(self.current_feed_entries):
+                    title = entry.get("title", f"Article {idx + 1}")
+                    feed_menu.add_option(Option(textwrap.shorten(title, width=40, placeholder="..."), id=str(idx)))
+                    
+                
+                feed_menu.focus()
+            else:
+                self.load_article_reader(url)
 
         except Exception as e:
-            text = "sorry, this page failed to load. Please try another article. " + str(e)
+            viewer.update(f"\n# Network/Parsing Error: {str(e)}")
 
-        self.article_read.clear()
-        self.article_read.set_text(str(text))
-        self.root.move_focus(self.article_read)
+    def load_article_reader(self, url: str) -> None:
+        viewer = self.query_one("#viewer", Markdown)
+        viewer.update(f"# Opening reader mode for: {url}\n")
 
-def parse_article(text):
-    f = open(settingsfile)
-    data = json.load(f)
-    f.close()
-    settings = tuple(data.items())
-    removeme = settings[0][1]
-    removephrase = settings[1][1]
+        try:
+            response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+            response.raise_for_status()
 
-    inputtext = text.splitlines()
-    output = ""
-    for line in inputtext:
-        if not line.startswith(tuple(removeme)) and line != "":
-            for old in removephrase:
-                line = line.replace(old, "")
+            doc = Document(response.text)
+            title = doc.title()
+            clean_html = doc.summary()
+            markdown_content = md(clean_html, heading_style="ATX")
 
-            output = output + "\n"
-            wrapped = textwrap.wrap(line, width=columns - 5, drop_whitespace=True, replace_whitespace=False)
-            for newline in wrapped:
-                output += newline + "\n"
-    return(output)
+            viewer.update(f"# {title} \n\n" + markdown_content)
+
+        except Exception as e:
+            viewer.update(f"# Failed to extract content: {str(e)}")
+
+    def action_focus_feeds(self) -> None:
+        self.query_one("#saved_feeds_list", OptionList).focus()
+
+    def action_back_to_articles(self) -> None:
+        self.query_one("#feed_menu", OptionList).focus()
+
 
 def main():
-    root = py_cui.PyCUI(9, 8)
-    wrapper =  NewsbetterApp(root)
-    root.start()
-main()
+    ReaderModeApp().run()
+
+if __name__ == "__main__":
+    main()  # 1.1.2, 1.2.5

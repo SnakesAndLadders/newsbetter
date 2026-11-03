@@ -2,8 +2,11 @@
 requires = [
     "setuptools>=84.1.0",
     "wheel",
-    "newspaper3k",
-    "py_cui",
-    "feedparser"
+    "requests", 
+    "feedparser", 
+    "markdownify", 
+    "readability-lxml", 
+    "rich", 
+    "textual"
 ]
 build-backend = "setuptools.build_meta"

@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=84.1.0",
+    "setuptools>=84.2.1",
     "wheel",
     "newspaper3k",
     "py_cui",

@@ -5,6 +5,7 @@ Author: Shawn Ayotte
 Created:
 """
 # Todo: Add a "Remove Feed" option in the sidebar, allowing users to delete saved feeds from the list and the JSON file.
+# Todo: Fix rss feed refreshing, currently r and R do nothing, need to implement a method to refresh the feed list and update the UI accordingly.
 # Todo: Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading 
 # Todo: Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app. 
 # Todo: Add option to export to Obsidian using Obsidian API, allowing users to save articles directly to their Obsidian note-taking app.
@@ -18,6 +19,7 @@ import feedparser
 from pathlib import Path
 from markdownify import markdownify as md
 from readability import Document
+from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Header, Footer, Input, OptionList, Label, Markdown
@@ -128,9 +130,7 @@ class ReaderModeApp(App):
         ("b", "back_to_articles", "Focus Articles"),
         ("f", "focus_feeds", "Focus Sidebar"),
         ("left", "focus_previous", "Focus Previous"),
-        ("right", "focus_next", "Focus Next"),
-        ("r", "fetch_rss_feed", "Refresh Feeds"),
-        ("R", "load_saved_feeds", "Reload Saved Feeds")
+        ("right", "focus_next", "Focus Next")
     ]
 
     def __init__(self):
@@ -155,14 +155,17 @@ class ReaderModeApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.title = "NewsBetter - TUI RSS Reader"
         self.refresh_saved_feeds_ui()
-        self.query_one("#saved_feeds_list", OptionList).focus()
+        self.query_one("#saved_feeds_list", OptionList).focus() 
 
     def refresh_saved_feeds_ui(self) -> None:
         feeds_list = self.query_one("#saved_feeds_list", OptionList)
         feeds_list.clear_options()
         for name in self.saved_feeds.keys():
             feeds_list.add_option(Option(name, id=name))
+        feeds_list.focus()
+        # feeds_list.action_first()
 
     def action_add_feed(self) -> None:
         def handle_dialog_result(result: tuple[str, str] | None) -> None:
@@ -182,8 +185,9 @@ class ReaderModeApp(App):
             url = event.value.strip()
             if url:
                 self.fetch_rss_feed(url)
-
-    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+    @on(OptionList.OptionHighlighted, "#saved_feeds_list")
+    @on(OptionList.OptionHighlighted, "#feed_menu")
+    def on_option_list_option_selected(self, event: OptionList.OptionHighlighted) -> None:
         menu_id = event.option_list.id
         
         if menu_id == "saved_feeds_list":
@@ -203,15 +207,16 @@ class ReaderModeApp(App):
         feed_menu = self.query_one("#feed_menu", OptionList)
         
         feed_menu.clear_options()
-        
-        viewer.update("# Syncing feed source...")
+        feed_name = next(
+            (name for name, feed_url in self.saved_feeds.items() if feed_url == url),
+            url,
+        )
+        viewer.update(f"# Syncing feed source: {feed_name}...")
 
         try:
             feed_data = feedparser.parse(url, agent="Mozilla/5.0")
-            
-            # Use data entry validation instead of protocol version tracking flags
             if feed_data.entries:
-                viewer.update(f"# Loaded RSS Feed successfully.\n\n## Select an item from the **Articles Menu** on the left.")
+                viewer.update(f"# Loaded  {feed_name} successfully.\n\n## Select an item from the **Articles Menu** on the left.")
                 self.current_feed_entries = feed_data.entries
                 
                 for idx, entry in enumerate(self.current_feed_entries):
@@ -220,6 +225,7 @@ class ReaderModeApp(App):
                     
                 
                 feed_menu.focus()
+                feed_menu.action_first()
             else:
                 self.load_article_reader(url)
 
@@ -238,8 +244,9 @@ class ReaderModeApp(App):
             title = doc.title()
             clean_html = doc.summary()
             markdown_content = md(clean_html, heading_style="ATX")
-
+            viewer.update("")
             viewer.update(f"# {title} \n\n" + markdown_content)
+            viewer.focus()
 
         except Exception as e:
             viewer.update(f"# Failed to extract content: {str(e)}")

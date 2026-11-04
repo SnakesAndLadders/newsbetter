@@ -1,11 +1,9 @@
-# Call this from a Screen https://textual.textualize.io/guide/screens/
-# in __init__ call self.push_screen(DetailScreen(title=title, body=f"## [Link to article:]({url}) \n\n" + markdown_content))
 import json
 import os
 from pathlib import Path
 import requests
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal
+from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Button, Footer, Header, Input, Label, TextArea
 from textual.screen import ModalScreen
 
@@ -28,13 +26,39 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
         background: $surface;
     }
     Container {
-        padding: 1;
-    }
-    .form-group {
-        width: 60;
-        height: auto;
+        width: 75%;
+        height: 95%;
         background: #242424;
         border: thick #3a3a3a;
+        padding: 1 2;
+        content-align: center middle;
+    }
+    .form-group {
+        width: 50%;
+        background: #242424;
+        border: thick #3a3a3a;
+        padding: 1 2;
+    }
+    .form-container {
+        width: 100%;
+        height: 7;
+        content-align: center middle;
+    }
+    .title-group {
+        width: 100%;
+        background: #242424;
+        border: thick #3a3a3a;
+        padding: 1 2;
+    }
+    .body-group {
+            width: 1fr;
+            background: #242424;
+            border: thick #3a3a3a;
+            padding: 1 2;
+    }
+    .button-group {
+        width: 100%;
+        content-align: center middle;
         padding: 1 2;
     }
     .label {
@@ -55,14 +79,23 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
         width: 100%;
         content-align: center middle;
     }
-    Button {
-        width: 100%;
+    #token-input {
+        width: 1fr;
+    }
+    #title-input {
+        width: 1fr;
+        border: solid $primary;
         margin-top: 1;
+    }
+    Button {
+        width: 20;
+        margin-top: 1;
+        border: thick #3a3a3a;
     }
     """
 
     BINDINGS = [
-        ("q", "quit", "Quit"),
+        ("ctrl+q", "quit", "Quit"),
         ("ctrl+s", "save_note", "Save Note"),
     ]
 
@@ -70,27 +103,34 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
         yield Header(show_clock=True)
         with Container():
             # Configuration Row (Token)
-            with Horizontal(classes="form-group"):
-                yield Label("Joplin Token:", classes="label")
-                yield Input(placeholder="Paste your Joplin Web Clipper authorization token here...", id="token-input", password=True)
+            with Horizontal(classes="form-container"):
+                with Horizontal(classes="form-group"):
+                    yield Label("Joplin Token:", classes="label")
+                    yield Input(placeholder="Paste your Joplin Web Clipper authorization token here...", id="token-input", password=True)
+                
+                # Notebook ID Row (Persistent)
+                with Horizontal(classes="form-group"):
+                    yield Label("Notebook ID:", classes="label")
+                    yield Input(placeholder="Optional: Parent Notebook ID folder string...", id="parent-input")
             
-            # Notebook ID Row (Persistent)
-            with Horizontal(classes="form-group"):
-                yield Label("Notebook ID:", classes="label")
-                yield Input(placeholder="Optional: Parent Notebook ID folder string...", id="parent-input")
 
             # Note Title Row
-            with Horizontal(classes="form-group"):
+            with Vertical(classes="title-group"):
                 yield Label("Note Title:", classes="label")
-                yield Input(placeholder="Enter note title...", id="title-input")
+                yield Label(self.note_title, id="title-input")
 
             # Markdown Content Body
-            yield Label("Markdown Body (Ctrl+S to save):", id="body-label")
-            yield TextArea(language="markdown", id="body-input")
+            with Vertical(classes="body-group"):
+                yield Label("Markdown Body (Ctrl+S to save):", classes="label")
+                yield TextArea(self.note_body, language="markdown", id="body-input")
 
             # Actions
-            yield Button("Save Note to Joplin", variant="success", id="save-btn")
+            with Horizontal(classes="button-group"):
+                yield Button("Save to Joplin", variant="success", id="save-btn")
+                yield Button("Cancel", variant="error", id="cancel-btn")
+            
             yield Label("Ready", id="status-bar")
+            
             
         yield Footer()
 
@@ -147,10 +187,16 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
         """Triggered via Ctrl+S shortcut key."""
         self.process_note_submission()
 
+    def action_quit(self) -> None:
+        """Triggered via Ctrl+q shortcut key."""
+        self.dismiss("[b red]Note clipping canceled by user.[/]")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Triggered via the Save UI Button click."""
         if event.button.id == "save-btn":
             self.process_note_submission()
+        elif event.button.id == "cancel-btn":
+            self.dismiss("[b red]Note clipping canceled by user.[/]")
 
     def process_note_submission(self) -> None:
         """Handles validation and sending data over to the Joplin API endpoints."""
@@ -183,11 +229,11 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
             response = requests.post(url, json=payload, params={"token": token})
             if response.status_code == 200:
                 note_id = response.json().get("id")
-                status_bar.update(f"[b green]Success! Note clipped safely (ID: {note_id})[/]")
+                status_bar.update(f"[b green]Success! Note clipped (ID: {note_id})[/]")
                 # Clear title and body workspace, but retain token and notebook ID configs
-                self.query_one("#title-input", Input).value = ""
+                self.query_one("#title-input", Label).text = ""
                 self.query_one("#body-input", TextArea).text = ""
-                self.dismiss("[b green]Success! Note clipped safely.[/]")
+                self.dismiss(f"[b green]Success! Note clipped (ID: {note_id}).[/]")
             else:
                 status_bar.update(f"[b red]Failed ({response.status_code}): {response.text}[/]")
                 self.dismiss(f"[b red]Error: {response.text}[/]")

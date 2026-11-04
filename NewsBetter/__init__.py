@@ -6,7 +6,7 @@ Created:
 """
 # Todo: Add a "Remove Feed" option in the sidebar, allowing users to delete saved feeds from the list and the JSON file.
 # Todo: Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading 
-# Todo: Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app. 
+# Done: Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app. 
 # Todo: Add option to export to Obsidian using Obsidian API, allowing users to save articles directly to their Obsidian note-taking app.
 # Todo: Add option to get an AI summary of the article using whatever AI service they like, local or cloud-based, allowing users to quickly understand the main points of an article without reading the entire content.
 
@@ -25,7 +25,7 @@ from textual.widgets import Header, Footer, Input, OptionList, Label, Markdown
 from textual.widgets.option_list import Option
 from textual.screen import ModalScreen
 
-from NewsBetter.joplin import JoplinClippingApp
+import joplinclip
 
 
 home_dir = Path.home()
@@ -136,7 +136,7 @@ class ReaderModeApp(App):
         ("f", "focus_feeds", "Focus Sidebar"),
         ("left", "focus_previous", "Focus Previous"),
         ("right", "focus_next", "Focus Next"),
-        ("j", "send_to_joplin", "Send to Joplin")
+        ("j", "send_to_joplin", "Send to Joplin"),
     ]
 
     def __init__(self):
@@ -197,16 +197,18 @@ class ReaderModeApp(App):
     @on(OptionList.OptionHighlighted, "#feed_menu")
     def on_option_list_option_selected(self, event: OptionList.OptionHighlighted) -> None:
         menu_id = event.option_list.id
-        
+        status_bar = self.query_one("#status-bar", Label)
         if menu_id == "saved_feeds_list":
             feed_name = event.option.id
             feed_url = self.saved_feeds[feed_name]
+            status_bar.update("")
             self.fetch_rss_feed(feed_url)
             
         elif menu_id == "feed_menu":
             idx = int(event.option.id)
             entry = self.current_feed_entries[idx]
             article_url = entry.get("link")
+            status_bar.update("")
             if article_url:
                 self.load_article_reader(article_url)
 
@@ -250,7 +252,7 @@ class ReaderModeApp(App):
         
             
         try:
-            response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+            response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"})
             response.raise_for_status()
 
             doc = Document(response.text)
@@ -270,15 +272,20 @@ class ReaderModeApp(App):
     def action_back_to_articles(self) -> None:
         self.query_one("#feed_menu", OptionList).focus()
 
-    def send_to_joplin(self) -> None:
-        
+    def action_send_to_joplin(self) -> None:
+        def handle_dialog_result(result: str | None) -> None:
+                    if result:
+                        status = result
+                        status_bar = self.query_one("#status-bar", Label)
+                        status_bar.update(f"[b green]{status}[/]")
+
         self.query_one("#viewer", Markdown).focus()
         status_bar = self.query_one("#status-bar", Label)
         status_bar.update(f"[b yellow]Preparing to send article to Joplin...[/]")
         markdown_content = self.query_one("#viewer", Markdown)
-        title = markdown_content.renderable.plain.splitlines()[0].lstrip("# ").strip()
-        body = markdown_content.value
-        self.push_screen(JoplinClippingApp(title, body))
+        title = markdown_content._markdown.split('\n')[0].lstrip("# ").strip()
+        body = markdown_content._markdown
+        self.push_screen(joplinclip.JoplinClippingApp(title, body), handle_dialog_result)
 
 
 def main():

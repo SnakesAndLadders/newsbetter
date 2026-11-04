@@ -25,6 +25,8 @@ from textual.widgets import Header, Footer, Input, OptionList, Label, Markdown
 from textual.widgets.option_list import Option
 from textual.screen import ModalScreen
 
+from NewsBetter.joplin import JoplinClippingApp
+
 
 home_dir = Path.home()
 FEEDS_FILE = home_dir / ".nbfeeds.json"
@@ -113,15 +115,17 @@ class ReaderModeApp(App):
     #feed_menu {
         height: 1fr;
     }
-    RichLog {
+    Markdown {
         background: #1a1a1a;
         color: #e0e0e0;
         padding: 1 2;
     }
     #status-bar {
         content-align: center middle;
+        background: transparent;
+        text-align: center;
         width: 100%;
-        margin: 1;
+        
     }
     """
     
@@ -131,7 +135,8 @@ class ReaderModeApp(App):
         ("b", "back_to_articles", "Focus Articles"),
         ("f", "focus_feeds", "Focus Sidebar"),
         ("left", "focus_previous", "Focus Previous"),
-        ("right", "focus_next", "Focus Next")
+        ("right", "focus_next", "Focus Next"),
+        ("j", "send_to_joplin", "Send to Joplin")
     ]
 
     def __init__(self):
@@ -187,6 +192,7 @@ class ReaderModeApp(App):
             url = event.value.strip()
             if url:
                 self.fetch_rss_feed(url)
+
     @on(OptionList.OptionHighlighted, "#saved_feeds_list")
     @on(OptionList.OptionHighlighted, "#feed_menu")
     def on_option_list_option_selected(self, event: OptionList.OptionHighlighted) -> None:
@@ -205,7 +211,7 @@ class ReaderModeApp(App):
                 self.load_article_reader(article_url)
 
     def fetch_rss_feed(self, url: str) -> None:
-        viewer = self.query_one("#viewer", Markdown)
+        # viewer = self.query_one("#viewer", Markdown)
         feed_menu = self.query_one("#feed_menu", OptionList)
         
         feed_menu.clear_options()
@@ -234,12 +240,15 @@ class ReaderModeApp(App):
                 self.load_article_reader(url)
 
         except Exception as e:
-            viewer.update(f"\n# Network/Parsing Error: {str(e)}")
+            # viewer.update(f"\n# Network/Parsing Error: {str(e)}")
+            status_bar.update(f"[b red]Error loading feed: {str(e)}[/]")
 
     def load_article_reader(self, url: str) -> None:
+        
         viewer = self.query_one("#viewer", Markdown)
         viewer.update(f"# Opening reader mode for: {url}\n")
-
+        
+            
         try:
             response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
             response.raise_for_status()
@@ -260,6 +269,16 @@ class ReaderModeApp(App):
 
     def action_back_to_articles(self) -> None:
         self.query_one("#feed_menu", OptionList).focus()
+
+    def send_to_joplin(self) -> None:
+        
+        self.query_one("#viewer", Markdown).focus()
+        status_bar = self.query_one("#status-bar", Label)
+        status_bar.update(f"[b yellow]Preparing to send article to Joplin...[/]")
+        markdown_content = self.query_one("#viewer", Markdown)
+        title = markdown_content.renderable.plain.splitlines()[0].lstrip("# ").strip()
+        body = markdown_content.value
+        self.push_screen(JoplinClippingApp(title, body))
 
 
 def main():

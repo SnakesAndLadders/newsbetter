@@ -1,12 +1,13 @@
 # Call this from a Screen https://textual.textualize.io/guide/screens/
-
+# in __init__ call self.push_screen(DetailScreen(title=title, body=f"## [Link to article:]({url}) \n\n" + markdown_content))
 import json
 import os
 from pathlib import Path
 import requests
-from textual.app import App, ComposeResult
+from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
 from textual.widgets import Button, Footer, Header, Input, Label, TextArea
+from textual.screen import ModalScreen
 
 home_dir = Path.home()
 CONFIG_FILE = home_dir / ".nbjoplin_settings.json"
@@ -14,7 +15,12 @@ CONFIG_FILE = home_dir / ".nbjoplin_settings.json"
 JOPLIN_PORT = 41184
 
 
-class JoplinClippingApp(App):
+class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
+    def __init__(self, title: str, body: str) -> None:
+        super().__init__()
+        self.note_title = title
+        self.note_body = body
+
     """A Textual TUI for saving Markdown notes directly to Joplin with persistent settings."""
 
     CSS = """
@@ -25,11 +31,15 @@ class JoplinClippingApp(App):
         padding: 1;
     }
     .form-group {
-        margin-bottom: 1;
+        width: 60;
         height: auto;
+        background: #242424;
+        border: thick #3a3a3a;
+        padding: 1 2;
     }
     .label {
-        width: 15;
+        margin-top: 1;
+        text-style: bold;
     }
     Input {
         width: 1fr;
@@ -40,13 +50,10 @@ class JoplinClippingApp(App):
         margin-top: 1;
     }
     #status-bar {
-        background: #1a1a1a;
-        color: $text;
-        padding: 0 1;
-        margin-top: 1;
-        height: 3;
-        content-align: center middle;
+        background: transparent;
         text-align: center;
+        width: 100%;
+        content-align: center middle;
     }
     Button {
         width: 100%;
@@ -145,13 +152,12 @@ class JoplinClippingApp(App):
         if event.button.id == "save-btn":
             self.process_note_submission()
 
-    def process_note_submission(self, title: str, body: str) -> None:
+    def process_note_submission(self) -> None:
         """Handles validation and sending data over to the Joplin API endpoints."""
         token = self.query_one("#token-input", Input).value.strip()
         parent_id = self.query_one("#parent-input", Input).value.strip()
-        #title = self.query_one("#title-input", Input).value.strip()
-        #body = self.query_one("#body-input", TextArea).text
-
+        title = self.note_title.strip()
+        body = self.note_body.strip()
         status_bar = self.query_one("#status-bar", Label)
 
         # Persist both fields immediately on submission
@@ -181,12 +187,10 @@ class JoplinClippingApp(App):
                 # Clear title and body workspace, but retain token and notebook ID configs
                 self.query_one("#title-input", Input).value = ""
                 self.query_one("#body-input", TextArea).text = ""
+                self.dismiss("[b green]Success! Note clipped safely.[/]")
             else:
                 status_bar.update(f"[b red]Failed ({response.status_code}): {response.text}[/]")
+                self.dismiss(f"[b red]Error: {response.text}[/]")
         except Exception as e:
             status_bar.update(f"[b red]Error sending request: {str(e)}[/]")
-
-
-if __name__ == "__main__":
-    app = JoplinClippingApp()
-    app.run()
+            self.dismiss(f"[b red]Error sending request: {str(e)}[/]")

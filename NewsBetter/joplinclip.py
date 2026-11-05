@@ -14,12 +14,12 @@ JOPLIN_PORT = 41184
 
 
 class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
+    """A Textual TUI for saving Markdown notes directly to Joplin with persistent settings."""
     def __init__(self, title: str, body: str) -> None:
+        """Initialize the Joplin Clipping App with a note title and body."""
         super().__init__()
         self.note_title = title
         self.note_body = body
-
-    """A Textual TUI for saving Markdown notes directly to Joplin with persistent settings."""
 
     CSS = """
     Screen {
@@ -100,6 +100,7 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
     ]
 
     def compose(self) -> ComposeResult:
+        """Compose the UI layout for the Joplin Clipping App."""
         yield Header(show_clock=True)
         with Container():
             # Configuration Row (Token)

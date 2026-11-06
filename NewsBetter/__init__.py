@@ -4,12 +4,9 @@ Main TUI implementation for NewsBetter
 Author: Shawn Ayotte
 Created:
 """
-# DONE: Add a "Remove Feed" option in the sidebar, allowing users to delete saved feeds from the list and the JSON file.
 # Todo: Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading 
-# Done: Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app. 
 # Todo: Add option to export to Obsidian using Obsidian API, allowing users to save articles directly to their Obsidian note-taking app.
 # Todo: Add option to get an AI summary of the article using whatever AI service they like, local or cloud-based, allowing users to quickly understand the main points of an article without reading the entire content.
-# Todo: Add summary page to quickly distill article information using an NLP library, likely [Sumy](https://github.com/miso-belica/sumy)
 
 import json
 import os
@@ -23,11 +20,12 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Header, Footer, Input, OptionList, Label, Markdown
-from textual.widgets import option_list
 from textual.widgets.option_list import Option
 from textual.screen import ModalScreen
 
 import NewsBetter.joplinclip
+import NewsBetter.nlp
+
 
 
 home_dir = Path.home()
@@ -35,16 +33,21 @@ FEEDS_FILE = home_dir / ".nbfeeds.json"
 
 def load_saved_feeds():
     """Load saved feeds from the JSON file, or return default feeds if the file doesn't exist or is invalid."""
+    default_feeds = {
+        "Hacker News": "https://news.ycombinator.com/rss",
+        "BBC News": "http://feeds.bbci.co.uk/news/rss.xml"
+    }
     if os.path.exists(FEEDS_FILE):
         try:
             with open(FEEDS_FILE, "r") as f:
                 return json.load(f)
         except Exception:
-            pass
-    return {
-        "Hacker News": "https://news.ycombinator.com/rss",
-        "BBC News": "http://feeds.bbci.co.uk/news/rss.xml"
-    }
+            # If there's an error reading the file, return default feeds
+            return default_feeds
+    else:
+        # If the file doesn't exist, create it with default feeds and return them
+        save_feeds(default_feeds)
+        return default_feeds
 
 def save_feeds(feeds):
     """Save feeds to the JSON file."""
@@ -156,6 +159,7 @@ class ReaderModeApp(App):
         ("left", "focus_previous", "Focus Previous"),
         ("right", "focus_next", "Focus Next"),
         ("j", "send_to_joplin", "Send to Joplin"),
+        ("s", "generate_summary", "Show Summary of article")
     ]
 
     def __init__(self):
@@ -335,6 +339,12 @@ class ReaderModeApp(App):
         body = markdown_content._markdown
         self.push_screen(NewsBetter.joplinclip.JoplinClippingApp(title, body), handle_dialog_result)
 
+    def action_generate_summary(self) -> None:
+        """Generate a summary of the currently viewed article."""
+        markdown_content = self.query_one("#viewer", Markdown)
+        title = markdown_content._markdown.split('\n')[0].lstrip("# ").strip()
+        body = markdown_content._markdown
+        self.push_screen(NewsBetter.nlp.AddFeedDialog(title, body))
 
 def main():
     """Entry point for the NewsBetter TUI application."""

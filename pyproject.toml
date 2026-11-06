@@ -6,7 +6,9 @@ requires = [
     "feedparser", 
     "markdownify", 
     "readability-lxml", 
-    "rich", 
+    "rich",
+    "strip_markdown",
+    "sumy",
     "textual"
 ]
 build-backend = "setuptools.build_meta"

@@ -14,12 +14,18 @@ My goal is to make the navigation as quick and painless as possible. There is no
 ### AI Disclaimer
 I am building this by hand, and I am using some LLM assistance. This is not "Vibe Coded". I am only using AI (in this case Gemini) for code hints and troubleshooting. I review every line of code and run all tests myself. That being said I am a hobbyist. If you see anything I can improve please submit an issue.
 
+## Features
+- Fast navigation.
+- Read the full article text without most of the extra junk.
+- Extremely fast loading articles.
+- Full mouse support, even over SSH!
+- Summary page to quickly distill article information using [Sumy](https://github.com/miso-belica/sumy) with LexRank. It is a fast, efficient way to summarize locally without relying on an LLM.
+
 ## TODO
 ### Fixes
 - Hide the export function behind a settings file, so you only need to configure one exporter and the option to export will not show in the shortcuts menu unless it is configured and selected. Barring that, bring up the settings menu if the export key is used and no exporter is enabled.
 
 ### Features
-- Add summary page to quickly distill article information using an NLP library, likely [Sumy](https://github.com/miso-belica/sumy). It is a fast, efficient way to summarize locally without relying on an LLM like ChatGPT.
 - Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading.
 - Add support for other note taking APIs like [Obsidian](https://obsidian.md/) or [Logseq](https://logseq.com/).
 - For those that prefer to use an LLM I would like to add an option to get an AI summary of the article using whatever LLM they like, local or cloud-based. 

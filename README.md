@@ -7,29 +7,42 @@ There are tons of TUI and CLI RSS readers out there ([Newsboat](https://newsboat
 There is always the option to open the page in w3m or the like, but then you have to open a completely different program and then close it to go back to the reader.  
   
 ## Enter NewsBetter
-NewsBetter uses the [Mozilla Readability](https://pypi.org/project/python-readability/) library to parse the article from its main URL, instead of only loading the summary from the RSS feed. This allows you to see the whole article and not the filler, just like using Reader View in Firefox!  
+NewsBetter uses the [Mozilla Readability](https://pypi.org/project/python-readability/) library to parse the article from its main URL, instead of only loading the summary from the RSS feed. This allows you to see the whole article and not the filler, just like using Reader View in Firefox! Built on the [Textual](https://textual.textualize.io/) framework so it supports theming, mouse navigation, and low resource usage.
+
+My goal is to make the navigation as quick and painless as possible. There is no offline caching or sync procedures. When you highlight a feed it refreshes it on the fly, the same when navigating articles. the Readability library is extremely fast so there is very little wait time.
+  
+### AI Disclaimer
+I am building this by hand, and I am using some LLM assistance. This is not "Vibe Coded". I am only using AI (in this case Gemini) for code hints and troubleshooting. I review every line of code and run all tests myself. That being said I am a hobbyist. If you see anything I can improve please submit an issue.
 
 ## TODO
-There are a lot of features that I would like to add to this software. Among them are:
-- Currently you can't remove a feed, I am going to fix that. For now edit your [Home Folder] -> .nbfeeds.json file to remove entries
-- Update this README with current information. Installation is the same but everything has been reworked. See release notes.
+### Fixes
+- Hide the export function behind a settings file, so you only need to configure one exporter and the option to export will not show in the shortcuts menu unless it is configured and selected. Barring that, bring up the settings menu if the export key is used and no exporter is enabled.
+
+### Features
+- Add summary page to quickly distill article information using an NLP library, likely [Sumy](https://github.com/miso-belica/sumy). It is a fast, efficient way to summarize locally without relying on an LLM like ChatGPT.
 - Add option to save article in Markdown format to a local file, allowing users to archive articles for offline reading.
-- Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app.
-- Add support for other note taking APIs.
-- Add option to get an AI summary of the article using whatever AI service they like, local or cloud-based.
+- Add support for other note taking APIs like [Obsidian](https://obsidian.md/) or [Logseq](https://logseq.com/).
+- For those that prefer to use an LLM I would like to add an option to get an AI summary of the article using whatever LLM they like, local or cloud-based. 
 
 ## Install
 Simply run 
 ```
 pip3 install NewsBetter 
 ```
-and run NewsBetter when complete (Mind the capital letters, I know it is not the standard naming but oh well).
+and run "newsbetter" when complete 
 
 ## Usage
-When inside the software the controlls are simple. 
-- Press 'a' to add a new feed. 
-- Use the the up and down arrows to highlight the feed you want, then press the right arrow to go to the list of articles
-- Use the up and down arrows to highlight the article you want to read, them press the right arrow to read the article.
-- Use the left arrow to go back.
-- Press 'q' to quit anywhere except when you are reading the article. To get out of the article widget press the left arrow key or 'esc'
-- Press 's' to enter summary mode anywhere except when in the article widge. This will create a quick summary of the article. Press 's' again to go back to displaying the full article (stragely this works when running the entrypoint.py file directly but does not work in the build. I am looking into it.)
+### Controls
+- Press the down arrow to select your feed. The feed will load automatically and move your selection to the first article
+- Use the right and left arrows to navigate
+- Press 'a' to add a feed, and 'd' to delete the selected feed
+### Joplin Export
+When an article is loaded you can press 'j' to export the article to Joplin Web Cliiper (assuming it is running on the local machine)
+    - Enable the [Web Clipper Service](https://joplinapp.org/help/apps/clipper/)
+    - After it is enabled go to Advanced options (in the Web Clipper options) and generate an authorization token
+    - Load and article and press 'j'
+    - Paste that token into the 'Joplin Token' field
+    - Go back to Joplin and create a folder to clip articles to (or use and existing folder if you like) it can be a sub-folder as well
+    - Right click the folder and select 'Copy Notebook ID'
+    - Paste that into the 'Notebook ID' field 
+    - Hit the 'Save to Joplin' button and you are done!

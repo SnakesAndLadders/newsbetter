@@ -9,6 +9,7 @@ Created:
 # Done: Add option to export to Joplin using Jopin Web Clipper API, allowing users to save articles directly to their Joplin note-taking app. 
 # Todo: Add option to export to Obsidian using Obsidian API, allowing users to save articles directly to their Obsidian note-taking app.
 # Todo: Add option to get an AI summary of the article using whatever AI service they like, local or cloud-based, allowing users to quickly understand the main points of an article without reading the entire content.
+# Todo: Add summary page to quickly distill article information using an NLP library, likely [Sumy](https://github.com/miso-belica/sumy)
 
 import json
 import os

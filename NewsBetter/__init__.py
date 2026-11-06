@@ -83,12 +83,21 @@ class AddFeedDialog(ModalScreen[tuple[str, str] | None]):
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle the submission of the feed name and URL."""
-        name = self.query_one("#feed_name", Input).value.strip()
-        url = self.query_one("#feed_url", Input).value.strip()
+        name_input = self.query_one("#feed_name", Input)
+        url_input = self.query_one("#feed_url", Input)
+
+        if event.input.id == "feed_name":
+            url_input.focus()
+            return
+
+        name = name_input.value.strip()
+        url = url_input.value.strip()
         if name and url:
             self.dismiss((name, url))
+        elif not name:
+            name_input.focus()
         else:
-            self.dismiss(None)
+            url_input.focus()
 
     def action_quit(self) -> None:
         """Triggered via [Esc] key to cancel the dialog."""
@@ -209,7 +218,7 @@ class ReaderModeApp(App):
                 selected_option = feeds_list.get_option_at_index(feeds_list.highlighted)
             if selected_option:
                 feed_name = selected_option.id
-                if feed_name in self.saved_feeds:
+                if feed_name is not None and feed_name in self.saved_feeds:
                     del self.saved_feeds[feed_name]
                     save_feeds(self.saved_feeds)
                     self.refresh_saved_feeds_ui()
@@ -226,12 +235,17 @@ class ReaderModeApp(App):
         status_bar = self.query_one("#status-bar", Label)
         if menu_id == "saved_feeds_list":
             feed_name = event.option.id
+            if feed_name is None:
+                return
             feed_url = self.saved_feeds[feed_name]
             status_bar.update("")
             self.fetch_rss_feed(feed_url)
             
         elif menu_id == "feed_menu":
-            idx = int(event.option.id)
+            option_id = event.option.id
+            if option_id is None:
+                return
+            idx = int(option_id)
             entry = self.current_feed_entries[idx]
             article_url = entry.get("link")
             status_bar.update("")
@@ -297,11 +311,19 @@ class ReaderModeApp(App):
         """Focus the feed menu in the sidebar to view articles."""
         self.query_one("#feed_menu", OptionList).focus()
 
+    def action_focus_previous(self) -> None:
+        """Move focus to the previous focusable widget."""
+        self.screen.focus_previous()
+
+    def action_focus_next(self) -> None:
+        """Move focus to the next focusable widget."""
+        self.screen.focus_next()
+
     def action_send_to_joplin(self) -> None:
         """Send the currently viewed article to Joplin using the Joplin Web Clipper API."""
-        def handle_dialog_result(result: str | None) -> None:
+        def handle_dialog_result(result: tuple[str, str] | None) -> None:
                     if result:
-                        status = result
+                        state, status = result
                         status_bar = self.query_one("#status-bar", Label)
                         status_bar.update(f"[b green]{status}[/]")
 

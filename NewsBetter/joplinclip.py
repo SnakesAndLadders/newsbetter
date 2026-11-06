@@ -190,14 +190,16 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
 
     def action_quit(self) -> None:
         """Triggered via Ctrl+q shortcut key."""
-        self.dismiss("[b red]Note clipping canceled by user.[/]")
+        status = "[b red]Note clipping canceled by user.[/]"
+        self.dismiss(("Cancel", status))
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Triggered via the Save UI Button click."""
         if event.button.id == "save-btn":
             self.process_note_submission()
         elif event.button.id == "cancel-btn":
-            self.dismiss("[b red]Note clipping canceled by user.[/]")
+            status = "[b red]Note clipping canceled by user.[/]"
+            self.dismiss(("Cancel", status))
 
     def process_note_submission(self) -> None:
         """Handles validation and sending data over to the Joplin API endpoints."""
@@ -232,12 +234,16 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
                 note_id = response.json().get("id")
                 status_bar.update(f"[b green]Success! Note clipped (ID: {note_id})[/]")
                 # Clear title and body workspace, but retain token and notebook ID configs
-                self.query_one("#title-input", Label).text = ""
+                self.query_one("#title-input", Label).update("")
                 self.query_one("#body-input", TextArea).text = ""
-                self.dismiss(f"[b green]Success! Note clipped (ID: {note_id}).[/]")
+                status = f"[b green]Success! Note clipped (ID: {note_id}).[/]"
+                self.dismiss(("Success", status))
+                
             else:
                 status_bar.update(f"[b red]Failed ({response.status_code}): {response.text}[/]")
-                self.dismiss(f"[b red]Error: {response.text}[/]")
+                status = f"[b red]Error: {response.text}[/]"
+                self.dismiss(("Error", status))
         except Exception as e:
             status_bar.update(f"[b red]Error sending request: {str(e)}[/]")
-            self.dismiss(f"[b red]Error sending request: {str(e)}[/]")
+            status = f"[b red]Error sending request: {str(e)}[/]"
+            self.dismiss(("Error", status))

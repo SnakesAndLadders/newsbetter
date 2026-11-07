@@ -2,7 +2,7 @@
 Yet another RSS news reader
 
 ## Just... why?
-There are tons of TUI and CLI RSS readers out there ([Newsboat](https://newsboat.org/)) is one that I have used for years. The one thing I don't like is that more and more sites are putting less and less details in their rss files.  
+There are tons of TUI and CLI RSS readers out there [Newsboat](https://newsboat.org/) is one that I have used for years. The one thing I don't like is that more and more sites are putting less and less details in their rss files.  
   
 There is always the option to open the page in w3m or the like, but then you have to open a completely different program and then close it to go back to the reader.  
   
@@ -19,7 +19,7 @@ I am building this by hand, and I am using some LLM assistance. This is not "Vib
 - Read the full article text without most of the extra junk.
 - Extremely fast loading articles.
 - Full mouse support, even over SSH!
-- Summary page to quickly distill article information using [Sumy](https://github.com/miso-belica/sumy) with LexRank. It is a fast, efficient way to summarize locally without relying on an LLM.
+- Summary page to quickly distill article information using [Sumy](https://github.com/miso-belica/sumy) with LexRank. It is a fast, efficient way to summarize locally without relying on an LLM, though it's not perfect.
 
 ## TODO
 ### Fixes
@@ -39,16 +39,17 @@ and run "newsbetter" when complete
 
 ## Usage
 ### Controls
-- Press the down arrow to select your feed. The feed will load automatically and move your selection to the first article
+- Press the down arrow and then enter to select your feed. The feed will load automatically and move you into the article list. Hit enter to load the article.
 - Use the right and left arrows to navigate
 - Press 'a' to add a feed, and 'd' to delete the selected feed
+- Press 's' for a summary of the current article. It will open in a new window.
 ### Joplin Export
 When an article is loaded you can press 'j' to export the article to Joplin Web Cliiper (assuming it is running on the local machine)
-    - Enable the [Web Clipper Service](https://joplinapp.org/help/apps/clipper/)
-    - After it is enabled go to Advanced options (in the Web Clipper options) and generate an authorization token
-    - Load and article and press 'j'
-    - Paste that token into the 'Joplin Token' field
-    - Go back to Joplin and create a folder to clip articles to (or use and existing folder if you like) it can be a sub-folder as well
-    - Right click the folder and select 'Copy Notebook ID'
-    - Paste that into the 'Notebook ID' field 
-    - Hit the 'Save to Joplin' button and you are done!
+- Enable the [Web Clipper Service](https://joplinapp.org/help/apps/clipper/)
+- After it is enabled go to Advanced options (in the Web Clipper options) and generate an authorization token
+- Load an article and press 'j'
+- Paste that token into the 'Joplin Token' field
+- Go back to Joplin and create a folder to clip articles to (or use and existing folder if you like) it can be a sub-folder as well
+- Right click the folder and select 'Copy Notebook ID'
+- Paste that into the 'Notebook ID' field 
+- Hit the 'Save to Joplin' button and you are done!

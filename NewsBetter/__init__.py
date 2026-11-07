@@ -230,9 +230,11 @@ class ReaderModeApp(App):
                     status_bar.update(f"[b yellow]Deleted feed: {feed_name}[/]")
         except Exception as e:
                     status_bar.update(f"[b red]Error deleting feed: {str(e)}[/]")
-
-    @on(OptionList.OptionHighlighted, "#saved_feeds_list")
-    @on(OptionList.OptionHighlighted, "#feed_menu")
+    # Enabling the 2 lines below will load the article when you highlight it in the feed menu, 
+    #   and it will load the article when you highlight a feed in the saved feeds list.
+    #   I thought it was a good idea but it was a bit too much for the user experience, so I commented it out.
+    #@on(OptionList.OptionHighlighted, "#saved_feeds_list")
+    #@on(OptionList.OptionHighlighted, "#feed_menu")
     def on_option_list_option_selected(self, event: OptionList.OptionHighlighted) -> None:
         """Handle the selection of an option in either the saved feeds list or the feed menu."""
         menu_id = event.option_list.id

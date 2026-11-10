@@ -239,12 +239,14 @@ class ReaderModeApp(App):
         """Handle the selection of an option in either the saved feeds list or the feed menu."""
         menu_id = event.option_list.id
         status_bar = self.query_one("#status-bar", Label)
+        viewer = self.query_one("#viewer", Markdown)
         if menu_id == "saved_feeds_list":
             feed_name = event.option.id
             if feed_name is None:
                 return
             feed_url = self.saved_feeds[feed_name]
             status_bar.update("")
+            viewer.update("")
             self.fetch_rss_feed(feed_url)
             
         elif menu_id == "feed_menu":

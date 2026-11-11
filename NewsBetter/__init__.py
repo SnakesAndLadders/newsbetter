@@ -98,9 +98,9 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
     .form-group {
         width: 75%;
         height: 95%;
-        background: #242424;
-        border: thick #3a3a3a;
+        background: #242424;\
         padding: 1 2;
+        margin-top: 1;
     }
     .label {
         margin-top: 1;
@@ -108,7 +108,17 @@ class JoplinClippingApp(ModalScreen[tuple[str, str] | None]):
     }
     #title-input {
         width: 1fr;
-        border: solid $primary;
+        border: thick #3a3a3a;
+        margin-top: 1;
+    }
+    #body-input {
+        border: thick #3a3a3a;
+        width: 1fr;
+        margin-top: 1;
+    }
+    #notebook-name {
+        border: thick #3a3a3a;
+        width: 1fr;
         margin-top: 1;
     }
     """
@@ -453,6 +463,7 @@ class ReaderModeApp(App):
         ("right", "focus_next", "Focus Next"),
         ("e", "export_article", "Export Article"),
         ("s", "generate_summary", "Show Summary of article"),
+        ("t", "cycle_theme", "Cycle Theme"),
         ("ctrl+s", "open_settings", "Open Settings")
     ]
 
@@ -507,6 +518,13 @@ class ReaderModeApp(App):
             self.push_screen(AddFeedDialog(), handle_dialog_result)
         except Exception as e:
                     status_bar.update(f"[b red]Error adding feed: {str(e)}[/]")
+
+    def action_cycle_theme(self) -> None:
+        themes = list(self.available_themes.keys())
+        next_index = (themes.index(self.theme) + 1) % len(themes)
+        self.theme = themes[next_index]
+        status_bar = self.query_one("#status-bar", Label)
+        status_bar.update(f"[b green]Theme: {self.theme}[/]")
 
     def action_delete_feed(self) -> None:
         """Action to delete the selected feed from the saved feeds list."""

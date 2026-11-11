@@ -55,7 +55,7 @@ When an article is loaded you can press 'j' to export the article to Joplin Web 
 - Hit the 'Save to Joplin' button and you are done!
 
 ## Screenshots
-<img src="docs/images/screenshot.png" alt="Main Screen" width="500" />
+<img src="docs/images/MainScreen.png" alt="Main Screen" width="500" />
 <img src="docs/images/Settings.png" alt="Settings" width="500" />
 <img src="docs/images/ExportJoplin.png" alt="Export to Joplin" width="500" />
 <img src="docs/images/Summary.png" alt="Summary Screen" width="500" />

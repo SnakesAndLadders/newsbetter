@@ -1,3 +1,2 @@
-import NewsBetter
-
-NewsBetter.main()
+from NewsBetter.ReaderModeApp import main
+main()

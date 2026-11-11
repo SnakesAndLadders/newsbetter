@@ -277,8 +277,7 @@ class SettingsDialog(ModalScreen[dict[str, str] | None]):
     """A modal dialog for configuring application settings."""
     CSS = """
     Container {
-        width: 75%;
-        height: 95%;
+        width: 45%;
         background: #242424;
         border: thick #3a3a3a;
         padding: 1 2;
